@@ -1,5 +1,10 @@
 const path = require('path');
 const BASE_PATH = path.join(__dirname, 'db');
+var pg = require('pg');
+
+if (process.env.NODE_ENV === 'production') {
+  pg.defaults.ssl = true;
+}
 
 module.exports = {
   test: {
@@ -26,7 +31,14 @@ module.exports = {
 
   production: {
     client: 'pg',
-    connection: process.env.DATABASE_URL,
+
+    connection: {
+      host: process.env.DATABASE_HOST,
+      user: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE
+    },
+
     migrations: {
       directory: path.join(BASE_PATH, 'migrations')
     },

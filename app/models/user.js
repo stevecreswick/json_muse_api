@@ -52,6 +52,54 @@ const signup = (request, response) => {
     } )
 }
 
+const findUser = (user) => {
+  console.log('Searching for ', user);
+  return database('users')
+    .where({ name: user.name })
+    .select('*')
+}
+
+const checkPassword = (reqPassword, foundUser) => {
+  return new Promise((resolve, reject) => {
+    bcrypt.compare(reqPassword, foundUser.password_digest, (err, response) => {
+        if (err) {
+          reject(err)
+        }
+        else if (response) {
+          resolve(response)
+        } else {
+          reject(new Error('Passwords do not match.'))
+        }
+    })
+  })
+}
+
+const updateUserToken = (token, user) => {
+  return database('users')
+    .where({ name: user.name })
+    .update({ token: token })
+    .returning('*');
+}
+
+const signin = (request, response) => {
+  const userReq = request.body
+  let user
+
+  findUser(userReq)
+    .then(foundUser => {
+      user = foundUser[0]
+      return checkPassword(userReq.password, user)
+    })
+    .then((res) => createToken())
+    .then(token => updateUserToken(token, user))
+    .then(() => {
+      delete user.password_digest
+      response.status(200).json(user)
+    })
+    .catch((err) => console.error(err))
+}
+
 module.exports = {
   signup,
+  signin
 }

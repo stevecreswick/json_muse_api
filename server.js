@@ -28,7 +28,9 @@ app.use( cors() );
 
 const User = require('./app/models/user.js')
 
-app.post('/signup', User.signup)
+app.post('/signup', User.signup);
+
+app.post('/signin', User.signin);
 
 // const controller = express.Router();
 //
